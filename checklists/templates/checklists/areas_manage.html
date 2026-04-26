@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="m-0">Gerenciar Áreas</h2>
+    <div class="text-muted small">Crie, edite ou remova áreas.</div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+      Voltar
+    </a>
+
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createAreaModal">
+      + Nova Área
+    </button>
+  </div>
+</div>
+
+
+{% if areas %}
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th style="width: 200px;">Criada em</th>
+            <th style="width: 200px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for area in areas %}
+            <tr>
+              <td><strong>{{ area.name }}</strong></td>
+              <td class="text-muted small">{{ area.created_at|date:"d/m/Y H:i" }}</td>
+              <td class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editAreaModal{{ area.id }}">
+                  Editar
+                </button>
+
+                <form method="post" action="{% url 'area_delete' area.id %}" onsubmit="return confirm('Deseja excluir esta área e todos os itens?');">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm">
+                    Excluir
+                  </button>
+                </form>
+              </td>
+            </tr>
+
+            <!-- MODAL EDITAR -->
+            <div class="modal fade" id="editAreaModal{{ area.id }}" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <form method="post" action="{% url 'area_edit' area.id %}">
+                    {% csrf_token %}
+
+                    <div class="modal-header">
+                      <h5 class="modal-title">Editar Área</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                      <label class="form-label">Nome</label>
+                      <input type="text" name="name" class="form-control" value="{{ area.name }}" required>
+                    </div>
+
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                      </button>
+                      <button type="submit" class="btn btn-primary">
+                        Salvar
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+              </div>
+            </div>
+
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="alert alert-warning">
+    Você ainda não criou nenhuma área.
+  </div>
+{% endif %}
+
+
+<!-- MODAL CRIAR -->
+<div class="modal fade" id="createAreaModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="{% url 'area_create' %}">
+        {% csrf_token %}
+
+        <div class="modal-header">
+          <h5 class="modal-title">Criar nova área</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <label class="form-label">Nome</label>
+          {{ area_form.name }}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button type="submit" class="btn btn-success">
+            Criar
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
