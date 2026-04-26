@@ -1,21 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-5">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h3 class="mb-3">Login</h3>
+
+<style>
+  form p {
+    margin-bottom: 1rem;
+  }
+
+  form input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+  }
+
+  form input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+  }
+
+  form label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .login-card {
+    border-radius: 18px;
+  }
+</style>
+
+<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 72px);">
+  <div class="col-12 col-sm-10 col-md-6 col-lg-4">
+
+    <div class="card shadow-lg border-0 login-card">
+      <div class="card-body p-4 p-md-5">
+
+        <div class="text-center mb-4">
+          <h2 class="fw-bold mb-1">Bem-vindo 👋</h2>
+          <div class="text-muted small">
+            Faça login para acessar suas checklists.
+          </div>
+        </div>
 
         <form method="post">
           {% csrf_token %}
           {{ form.as_p }}
 
-          <button class="btn btn-primary w-100" type="submit">Entrar</button>
+          <button class="btn btn-primary w-100 py-2 fw-semibold mt-2" type="submit">
+            Entrar
+          </button>
         </form>
 
       </div>
     </div>
+
   </div>
 </div>
+
 {% endblock %}

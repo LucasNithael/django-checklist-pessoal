@@ -2,30 +2,133 @@
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<style>
+  .page-title {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .soft-card {
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 18px;
+  }
+
+  .soft-shadow {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+  }
+
+  .table thead th {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6c757d;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .table tbody tr:hover {
+    background: rgba(13, 110, 253, 0.04);
+  }
+
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .status-done {
+    background: #198754;
+  }
+
+  .status-pending {
+    background: #adb5bd;
+  }
+
+  .btn-rounded {
+    border-radius: 12px;
+  }
+
+  .badge-soft {
+    background: rgba(13, 110, 253, 0.08);
+    color: #0d6efd;
+    border: 1px solid rgba(13, 110, 253, 0.15);
+    font-weight: 600;
+  }
+
+  .filter-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #495057;
+  }
+</style>
+
+
+<!-- HEADER -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
   <div>
-    <h2 class="m-0">Minhas Checklists</h2>
-    <div class="text-muted small">Gerencie seus itens e filtre por área.</div>
+    <h2 class="page-title m-0">
+      📌 Minhas Checklists
+    </h2>
+    <div class="text-muted small">
+      Organize seus itens, filtre e acompanhe o progresso.
+    </div>
   </div>
 
-  <div class="d-flex gap-2">
-    <a href="{% url 'areas_manage' %}" class="btn btn-outline-primary">
-      Gerenciar Áreas
+  <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+    <a href="{% url 'areas_manage' %}" class="btn btn-outline-primary btn-rounded w-100 w-sm-auto">
+      ⚙ Gerenciar Áreas
     </a>
 
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createItemModal">
-      + Novo Item
+    <button class="btn btn-success btn-rounded w-100 w-sm-auto" data-bs-toggle="modal" data-bs-target="#createItemModal">
+      ➕ Novo Item
     </button>
   </div>
 </div>
 
 
-<div class="card shadow-sm mb-4">
+<!-- RESUMO -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-4">
+    <div class="card soft-card soft-shadow">
+      <div class="card-body">
+        <div class="text-muted small">Itens encontrados</div>
+        <div class="fs-3 fw-bold">{{ total_items }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="card soft-card soft-shadow">
+      <div class="card-body">
+        <div class="text-muted small">Concluídos / Pendentes</div>
+        <div class="fs-5 fw-bold">
+          <span class="text-success">{{ total_done }}</span>
+          <span class="text-muted">/</span>
+          <span class="text-secondary">{{ total_pending }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-md-4">
+    <div class="card soft-card soft-shadow">
+      <div class="card-body">
+        <div class="text-muted small">Áreas cadastradas</div>
+        <div class="fs-3 fw-bold">{{ total_areas }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- FILTROS -->
+<div class="card soft-card soft-shadow mb-4">
   <div class="card-body">
-    <form method="get" class="row g-2 align-items-end">
-      <div class="col-md-4">
-        <label class="form-label">Filtrar por área</label>
-        <select name="area" class="form-select">
+    <form method="get" class="row g-3 align-items-end">
+
+      <div class="col-12 col-md-4">
+        <label class="filter-label">📂 Área</label>
+        <select name="area" class="form-select btn-rounded">
           <option value="">Todas</option>
           {% for a in areas %}
             <option value="{{ a.id }}" {% if selected_area_id == a.id %}selected{% endif %}>
@@ -35,95 +138,120 @@
         </select>
       </div>
 
-      <div class="col-md-3">
-        <label class="form-label">Pesquisar</label>
-        <input type="text" name="q" class="form-control" placeholder="Ex: estudar verbos" value="{{ q }}" />
+      <div class="col-12 col-md-3">
+        <label class="filter-label">🔎 Pesquisa</label>
+        <input type="text" name="q" class="form-control btn-rounded"
+               placeholder="Ex: estudar verbos" value="{{ q }}" />
       </div>
 
-      <div class="col-md-2">
-        <label class="form-label">Status</label>
-        <select name="status" class="form-select">
+      <div class="col-12 col-md-2">
+        <label class="filter-label">✅ Status</label>
+        <select name="status" class="form-select btn-rounded">
           <option value="" {% if status == "" %}selected{% endif %}>Todos</option>
           <option value="pending" {% if status == "pending" %}selected{% endif %}>Não concluídos</option>
           <option value="done" {% if status == "done" %}selected{% endif %}>Concluídos</option>
         </select>
       </div>
 
-      <div class="col-md-3">
-        <label class="form-label">Ordenação</label>
-        <select name="order" class="form-select">
+      <div class="col-12 col-md-3">
+        <label class="filter-label">📅 Ordenação</label>
+        <select name="order" class="form-select btn-rounded">
           <option value="new" {% if order == "new" %}selected{% endif %}>Mais novos primeiro</option>
           <option value="old" {% if order == "old" %}selected{% endif %}>Mais antigos primeiro</option>
         </select>
       </div>
 
-      <div class="col-md-12 d-flex gap-2 mt-2">
-        <button type="submit" class="btn btn-primary">Aplicar filtro</button>
-        <a href="/" class="btn btn-outline-secondary">Limpar</a>
+      <div class="col-12 d-flex flex-column flex-sm-row gap-2">
+        <button type="submit" class="btn btn-primary btn-rounded w-100 w-sm-auto">
+          Aplicar filtro
+        </button>
+        <a href="/" class="btn btn-outline-secondary btn-rounded w-100 w-sm-auto">
+          Limpar
+        </a>
       </div>
+
     </form>
   </div>
 </div>
 
 
 {% if items %}
-  <div class="card shadow-sm">
+  <div class="card soft-card soft-shadow">
     <div class="card-body">
 
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th style="width: 80px;">Status</th>
-            <th>Item</th>
-            <th style="width: 200px;">Área</th>
-            <th style="width: 180px;">Criado em</th>
-            <th style="width: 100px;">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in items %}
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h5 class="fw-bold mb-0">📋 Itens</h5>
+        <span class="badge badge-soft px-3 py-2">
+          Total: {{ paginator.count }}
+        </span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead>
             <tr>
-              <td>
-                <form method="post" action="{% url 'item_toggle' item.id %}">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-sm {% if item.done %}btn-success{% else %}btn-outline-secondary{% endif %}">
-                    {% if item.done %}✓{% else %}○{% endif %}
-                  </button>
-                </form>
-              </td>
-
-              <td>
-                <span class="{% if item.done %}text-decoration-line-through text-muted{% endif %}">
-                  {{ item.title }}
-                </span>
-              </td>
-
-              <td>
-                <span class="badge text-bg-light border">
-                  {{ item.area.name }}
-                </span>
-              </td>
-
-              <td class="text-muted small">
-                {{ item.created_at|date:"d/m/Y H:i" }}
-              </td>
-
-              <td>
-                <form method="post" action="{% url 'item_delete' item.id %}" onsubmit="return confirm('Deseja excluir este item?');">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-outline-danger btn-sm">
-                    Excluir
-                  </button>
-                </form>
-              </td>
+              <th style="width: 80px;">Status</th>
+              <th>Item</th>
+              <th style="width: 200px;">Área</th>
+              <th style="width: 180px;">Criado em</th>
+              <th style="width: 120px;">Ações</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
 
+          <tbody>
+            {% for item in items %}
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="status-dot {% if item.done %}status-done{% else %}status-pending{% endif %}"></span>
+
+                    <form method="post" action="{% url 'item_toggle' item.id %}">
+                      {% csrf_token %}
+                      <button type="submit"
+                              class="btn btn-sm btn-rounded {% if item.done %}btn-success{% else %}btn-outline-secondary{% endif %}">
+                        {% if item.done %}✓{% else %}○{% endif %}
+                      </button>
+                    </form>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="fw-semibold {% if item.done %}text-decoration-line-through text-muted{% endif %}">
+                    {{ item.title }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="badge text-bg-light border px-3 py-2 rounded-pill">
+                    {{ item.area.name }}
+                  </span>
+                </td>
+
+                <td class="text-muted small">
+                  {{ item.created_at|date:"d/m/Y H:i" }}
+                </td>
+
+                <td>
+                  <form method="post" action="{% url 'item_delete' item.id %}"
+                        onsubmit="return confirm('Deseja excluir este item?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm btn-rounded w-100">
+                      Excluir
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+
+
+      <!-- PAGINAÇÃO -->
       {% if page_obj.has_other_pages %}
-        <nav class="mt-3">
-          <ul class="pagination mb-0">
+        <nav class="mt-4">
+          <ul class="pagination justify-content-center flex-wrap mb-0">
 
             {% if page_obj.has_previous %}
               <li class="page-item">
@@ -170,45 +298,8 @@
     </div>
   </div>
 
-  {% if page_obj.paginator.num_pages > 1 %}
-    <nav class="mt-3">
-      <ul class="pagination justify-content-center">
-
-        {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&area={{ selected_area_id|default:'' }}&q={{ q }}&status={{ status }}&order={{ order }}">Anterior</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <span class="page-link">Anterior</span>
-          </li>
-        {% endif %}
-
-        {% for num in page_obj.paginator.page_range %}
-          {% if num == page_obj.number %}
-            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-          {% else %}
-            <li class="page-item">
-              <a class="page-link" href="?page={{ num }}&area={{ selected_area_id|default:'' }}&q={{ q }}&status={{ status }}&order={{ order }}">{{ num }}</a>
-            </li>
-          {% endif %}
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}&area={{ selected_area_id|default:'' }}&q={{ q }}&status={{ status }}&order={{ order }}">Próxima</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <span class="page-link">Próxima</span>
-          </li>
-        {% endif %}
-
-      </ul>
-    </nav>
-  {% endif %}
 {% else %}
-  <div class="alert alert-warning">
+  <div class="alert alert-warning soft-shadow border-0 rounded-4">
     Nenhum item encontrado.
   </div>
 {% endif %}
@@ -216,35 +307,35 @@
 
 <!-- MODAL CRIAR ITEM -->
 <div class="modal fade" id="createItemModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4">
       <form method="post" action="{% url 'item_create' %}">
         {% csrf_token %}
 
         <div class="modal-header">
-          <h5 class="modal-title">Criar novo item</h5>
+          <h5 class="modal-title fw-bold">Criar novo item</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">Área</label>
+            <label class="form-label fw-semibold">Área</label>
             {{ item_form.area }}
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Título</label>
+            <label class="form-label fw-semibold">Título</label>
             {{ item_form.title }}
           </div>
 
           <input type="hidden" name="redirect_area" value="1" />
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+        <div class="modal-footer d-flex flex-column flex-sm-row gap-2">
+          <button type="button" class="btn btn-outline-secondary btn-rounded w-100 w-sm-auto" data-bs-dismiss="modal">
             Cancelar
           </button>
-          <button type="submit" class="btn btn-success">
+          <button type="submit" class="btn btn-success btn-rounded w-100 w-sm-auto">
             Salvar
           </button>
         </div>

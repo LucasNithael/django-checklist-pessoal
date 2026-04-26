@@ -18,7 +18,14 @@ def dashboard(request):
     status = request.GET.get("status", "")
     order = request.GET.get("order", "new")
 
+    # Query principal (com filtros aplicados)
     items = ChecklistItem.objects.filter(area__user=request.user).select_related("area")
+
+    # Totais gerais (sem filtros)
+    total_items = ChecklistItem.objects.filter(area__user=request.user).count()
+    total_done = ChecklistItem.objects.filter(area__user=request.user, done=True).count()
+    total_pending = ChecklistItem.objects.filter(area__user=request.user, done=False).count()
+    total_areas = Area.objects.filter(user=request.user).count()
 
     if selected_area_id:
         try:
@@ -60,6 +67,12 @@ def dashboard(request):
             "q": query,
             "status": status,
             "order": order,
+
+            # NOVOS DADOS PARA OS CARDS
+            "total_items": total_items,
+            "total_done": total_done,
+            "total_pending": total_pending,
+            "total_areas": total_areas,
         },
     )
 
